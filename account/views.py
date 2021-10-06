@@ -6,4 +6,4 @@ from .models import Account
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [permissions.permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
