@@ -7,7 +7,12 @@ from uuid import uuid4
 
 class Account(models.Model):
     token_expire = models.DateTimeField(blank=False, null=False)
-    email = models.EmailField(verbose_name="email")
+    email = models.EmailField(
+        verbose_name="email",
+        unique=True,
+        blank=False,
+        null=False,
+    )
     token = models.CharField(
         verbose_name="token",
         max_length=50,
