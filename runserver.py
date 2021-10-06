@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from os import environ
 
 
-def runserver(host, port, *args, **kwargs):
+def runserver(host: str, port: str, *args: list, **kwargs: dict) -> None:
     # make migrations and migrate
     execute_from_command_line([__name__, "makemigrations"])
     execute_from_command_line([__name__, "migrate"])
