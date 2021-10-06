@@ -1,0 +1,1 @@
+![django test](https://github.com/dmitriyVasilievich1986/authorization/actions/workflows/django_test.yml/badge.svg)
