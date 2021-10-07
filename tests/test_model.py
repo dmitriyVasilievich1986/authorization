@@ -3,6 +3,7 @@ from account.models import Account
 from django.utils import timezone
 from django.test import TestCase
 from datetime import timedelta
+import json
 
 API_URL = "http://localhost/api/accounts/"
 
@@ -10,10 +11,11 @@ API_URL = "http://localhost/api/accounts/"
 class AccountModelTest(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
+        self.email1 = "test1@gmail.com"
         self.password1 = "password1"
         self.password2 = "password2"
         obj: Account = Account.create(
-            email="test1@gmail.com", password=self.password1)
+            email=self.email1, password=self.password1)
         obj.save()
         self.obj_id = obj.id
         self.token = obj.token
@@ -81,6 +83,29 @@ class AccountModelTest(TestCase):
 
     def test_api_retrieve(self, *args: tuple, **kwargs: dict) -> None:
         self.client.credentials(HTTP_AUTHORIZATION=f'token {self.token}')
-        url = f'{API_URL}{self.obj_id}/'
-        response = self.client.get(url)
+        response = self.client.get(f'{API_URL}{self.obj_id}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_logout(self, *args: tuple, **kwargs: dict) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=f'token {self.token}')
+        response = self.client.post(f'{API_URL}logout/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(API_URL)
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(f"{API_URL}{self.obj_id}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_api_login(self, *args: tuple, **kwargs: dict) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=f'token {self.token}')
+        response = self.client.post(f'{API_URL}logout/')
+        self.assertEqual(response.status_code, 200)
+        data = {"email": self.email1, "password": self.password1}
+        response = self.client.post(
+            f"{API_URL}login/", data=json.dumps(data), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        new_token = response.json()["token"]
+        self.client.credentials(HTTP_AUTHORIZATION=f'token {new_token}')
+        response = self.client.get(f'{API_URL}{self.obj_id}/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(f'{API_URL}')
         self.assertEqual(response.status_code, 200)
