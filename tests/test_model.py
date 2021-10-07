@@ -49,6 +49,21 @@ class AccountModelTest(TestCase):
         response = self.client.get(f'{API_URL}{self.second_id}/')
         self.assertEqual(response.status_code, 403)
 
+    def test_api_update(self, *args: tuple, **kwargs: dict) -> None:
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'token {self.token}')
+        data = {"email": "newemail@gmail.com"}
+        response = self.client.patch(f'{API_URL}{self.obj_id}/', data=data)
+        self.assertEqual(response.status_code, 404)
+        response = self.client.put(f'{API_URL}{self.obj_id}/', data=data)
+        self.assertEqual(response.status_code, 404)
+
+    def test_api_delete(self, *args: tuple, **kwargs: dict) -> None:
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'token {self.token}')
+        response = self.client.delete(f'{API_URL}{self.obj_id}/')
+        self.assertEqual(response.status_code, 404)
+
     def test_api_retrieve(self, *args: tuple, **kwargs: dict) -> None:
         self.client.credentials(HTTP_AUTHORIZATION=f'token {self.token}')
         url = f'{API_URL}{self.obj_id}/'
