@@ -10,16 +10,31 @@ API_URL = "http://localhost/api/accounts/"
 class AccountModelTest(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
-        obj: Account = Account.create(email="test1@gmail.com")
+        self.password1 = "password1"
+        self.password2 = "password2"
+        obj: Account = Account.create(
+            email="test1@gmail.com", password=self.password1)
         obj.save()
         self.obj_id = obj.id
         self.token = obj.token
-        obj2: Account = Account.create(email="test2@gmail.com")
+        obj2: Account = Account.create(
+            email="test2@gmail.com", password=self.password2)
         obj2.token_expire = timezone.now() - timedelta(hours=1)
         obj2.save()
         self.second_id = obj2.id
         self.expired_token = obj2.token
         self.wrong_id = 22
+
+    def test_api_create(self, *args: tuple, **kwargs: dict) -> None:
+        response = self.client.post(
+            API_URL, data={"email": "test3@gmail.com", "password": "password3"})
+        self.assertEqual(response.status_code, 201)
+        response = self.client.post(API_URL, data={"email": "test4@gmail.com"})
+        self.assertEqual(response.status_code, 400)
+        response = self.client.post(API_URL, data={"password": "password3"})
+        self.assertEqual(response.status_code, 400)
+        response = self.client.post(API_URL)
+        self.assertEqual(response.status_code, 400)
 
     def test_api_list_wout_credentials(self, *args: tuple, **kwargs: dict) -> None:
         self.client.credentials(HTTP_AUTHORIZATION='wrong token')
