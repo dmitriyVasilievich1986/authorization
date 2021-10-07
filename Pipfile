@@ -8,6 +8,7 @@ django = "*"
 djangorestframework = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
+requests = "*"
 
 [requires]
 python_version = "3.9"
