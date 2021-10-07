@@ -1,7 +1,9 @@
+from django.contrib.auth.hashers import make_password
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import models
 from typing import Union
+from os import environ
 from uuid import uuid4
 
 
@@ -20,12 +22,21 @@ class Account(models.Model):
         blank=False,
         null=False,
     )
+    password = models.CharField(
+        verbose_name="password",
+        max_length=100,
+        unique=False,
+        blank=False,
+        null=False,
+    )
 
     @classmethod
-    def create(cls: models.Model, email: str, *args: tuple, **kwargs: dict) -> models.Model:
+    def create(cls: models.Model, email: str, password: str, *args: tuple, **kwargs: dict) -> models.Model:
+        hashed_password: str = make_password(
+            password=password, salt=environ.get("SALT", "salt"))
         token_expire: datetime = cls.get_token_expire_date()
         token: str = cls.generate_token()
-        return cls(email=email, token=token, token_expire=token_expire)
+        return cls(email=email, token=token, token_expire=token_expire, password=hashed_password)
 
     @staticmethod
     def generate_token(*args: tuple, **kwargs: dict) -> str:

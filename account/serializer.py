@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime, timedelta
+from rest_framework import exceptions
+from datetime import datetime
 from .models import Account
 
 
@@ -7,9 +8,16 @@ class AccountSerializer(ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"
-        read_only_fields = ['id']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'id': {'read_only': True},
+        }
 
     def create(self, validated_data) -> Account:
+        for field in ["email", "password"]:
+            if field not in validated_data:
+                message = {field: "The field cannot be empty"}
+                raise exceptions.ValidationError(message)
         instance: Account = Account.create(**validated_data)
         instance.save()
         return instance
