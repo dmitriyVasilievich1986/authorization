@@ -45,7 +45,13 @@ class AccountViewSet(viewsets.ModelViewSet):
         raise exceptions.NotFound
 
     def destroy(self, request, *args, **kwargs):
-        raise exceptions.NotFound
+        instance: Account = self.get_object()
+        serializer: AccountSerializer = self.get_serializer(instance)
+        token: str = request.META.get("HTTP_AUTHORIZATION", "")
+        if not serializer.is_same_token(token) or serializer.is_token_expired:
+            raise exceptions.PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=["POST"], detail=False)
     def login(self, request, *args, **kwargs):
